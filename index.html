@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PV-Anlage Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+<div class="dashboard">
+    <header>
+        <h1><i class="fas fa-solar-panel"></i> Photovoltaik-Dashboard</h1>
+        <div class="date-time">
+            <span id="current-date"></span>
+            <span id="current-time"></span>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <div class="card energy-flow">
+            <h2>Energiefluss</h2>
+            <div class="energy-diagram">
+                <div class="source solar">
+                    <i class="fas fa-sun"></i>
+                    <div class="value-container">
+                        <span id="pv-power">0</span> W
+                    </div>
+                </div>
+                <div class="flow-area">
+                    <div class="flow pv-flow" id="pv-flow-animation"></div>
+                    <div class="flow grid-flow" id="grid-flow-animation"></div>
+                    <div class="flow battery-flow" id="battery-flow-animation"></div>
+                    <div class="flow load-flow" id="load-flow-animation"></div>
+                </div>
+                <div class="destinations">
+                    <div class="destination battery">
+                        <i class="fas fa-battery-half"></i>
+                        <div class="value-container">
+                            <span id="battery-power">0</span> W
+                        </div>
+                    </div>
+                    <div class="destination grid">
+                        <i class="fas fa-power-off"></i>
+                        <div class="value-container">
+                            <span id="grid-power">0</span> W
+                        </div>
+                    </div>
+                    <div class="destination home">
+                        <i class="fas fa-home"></i>
+                        <div class="value-container">
+                            <span id="load-power">0</span> W
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card battery-status">
+            <h2>Batteriestatus</h2>
+            <div class="battery-container">
+                <div class="battery-graphic">
+                    <div class="battery-level" id="battery-level"></div>
+                </div>
+                <div class="battery-info">
+                    <div class="battery-percentage">
+                        <span id="battery-percentage">0</span>%
+                    </div>
+                    <div class="battery-mode" id="battery-mode">Normal</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card power-distribution">
+            <h2>Leistungsverteilung</h2>
+            <div class="chart-container">
+                <canvas id="power-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card daily-stats">
+            <h2>Tagesstatistik</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                    <div class="stat-value"><span id="e-day">0</span> Wh</div>
+                    <div class="stat-label">Heute erzeugt</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div class="stat-value"><span id="e-year">0</span> kWh</div>
+                    <div class="stat-label">Dieses Jahr</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-history"></i></div>
+                    <div class="stat-value"><span id="e-total">0</span> MWh</div>
+                    <div class="stat-label">Gesamtertrag</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-leaf"></i></div>
+                    <div class="stat-value"><span id="autonomy">0</span>%</div>
+                    <div class="stat-label">Autarkie</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card status-info">
+            <h2>Anlagenstatus</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Betriebsmodus:</div>
+                    <div class="status-value" id="operation-mode">Bidirektional</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Backup-Modus:</div>
+                    <div class="status-value" id="backup-mode">Aus</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Batterie Standby:</div>
+                    <div class="status-value" id="battery-standby">Aus</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Eigenverbrauch:</div>
+                    <div class="status-value" id="self-consumption">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Daten aktualisiert: <span id="last-update">-</span></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
