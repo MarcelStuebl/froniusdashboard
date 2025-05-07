@@ -1,3 +1,4 @@
+
 /* Globale Stile */
 :root {
     --primary-color: #2196F3;
@@ -57,6 +58,34 @@ h2 {
     color: var(--primary-color);
     margin-bottom: 15px;
     font-size: 1.2rem;
+}
+
+/* Header Zeit-Anzeige */
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.modern-time {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.modern-clock {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    background-color: rgba(240, 240, 240, 0.5);
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.modern-clock:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .date-time {

@@ -89,7 +89,7 @@ function updateDashboard() {
         second: '2-digit',
         hour12: false
     };
-    elements.jsonTimestamp.textContent = `Daten von: ${jsonDate.toLocaleString('de-DE', jsonTimeOptions)}`;
+    elements.jsonTimestamp.textContent = `${jsonDate.toLocaleString('de-DE', jsonTimeOptions)}`;
 
     // Leistungswerte aktualisieren (absolute Werte anzeigen)
     elements.pvPower.textContent = Math.abs(siteData.P_PV).toFixed(0);
