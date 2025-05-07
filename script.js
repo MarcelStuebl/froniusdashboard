@@ -6,6 +6,7 @@ let powerChart = null;
 const elements = {
     currentDate: document.getElementById('current-date'),
     currentTime: document.getElementById('current-time'),
+    jsonTimestamp: document.getElementById('json-timestamp'),
     pvPower: document.getElementById('pv-power'),
     batteryPower: document.getElementById('battery-power'),
     gridPower: document.getElementById('grid-power'),
@@ -37,10 +38,10 @@ function initDashboard() {
 
     // Regelmäßige Updates
     setInterval(updateDateTime, 1000); // Jede Sekunde
-    setInterval(loadData, 10000);     // Alle 10 Sekunden
+    setInterval(loadData, 30 * 60 * 1000); // Alle 30 Minuten (statt 10 Sekunden)
 }
 
-// Aktualisiere Datum und Uhrzeit
+// Aktualisiere moderne Uhrzeit und Datum
 function updateDateTime() {
     const now = new Date();
 
@@ -48,9 +49,11 @@ function updateDateTime() {
     const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
     elements.currentDate.textContent = now.toLocaleDateString('de-DE', dateOptions);
 
-    // Formatiere Uhrzeit: HH:MM:SS
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    elements.currentTime.textContent = now.toLocaleTimeString('de-DE', timeOptions);
+    // Formatiere Uhrzeit: HH:MM:SS Uhr (modernes Format)
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    elements.currentTime.textContent = `${hours}:${minutes}:${seconds} Uhr`;
 }
 
 // Lade Daten von der API
@@ -74,6 +77,19 @@ function updateDashboard() {
     const siteData = pvData.Body.Data.Site;
     const inverterData = pvData.Body.Data.Inverters["1"];
     const timestamp = pvData.Head.Timestamp;
+
+    // JSON Timestamp im Header anzeigen
+    const jsonDate = new Date(timestamp);
+    const jsonTimeOptions = {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+    elements.jsonTimestamp.textContent = `Daten von: ${jsonDate.toLocaleString('de-DE', jsonTimeOptions)}`;
 
     // Leistungswerte aktualisieren (absolute Werte anzeigen)
     elements.pvPower.textContent = Math.abs(siteData.P_PV).toFixed(0);
