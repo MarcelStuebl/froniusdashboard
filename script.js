@@ -59,7 +59,7 @@ function updateDateTime() {
 // Lade Daten von der API
 async function loadData() {
     try {
-        // In einer realen Anwendung würde hier ein API-Aufruf stehen
+        // In einer realen Anwendung würde hier ein API-Aufruf stehen.
         // Für das Beispiel nutzen wir die statischen Daten aus data.json
         const response = await fetch('data.json');
         pvData = await response.json();
