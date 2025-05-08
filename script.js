@@ -1,141 +1,140 @@
-// Globale Variablen
-let pvData = null;
+// Globale Variablen für Chart und Daten
 let powerChart = null;
+let lastData = null;
 
-// DOM-Elemente
-const elements = {
-    currentDate: document.getElementById('current-date'),
-    currentTime: document.getElementById('current-time'),
-    jsonTimestamp: document.getElementById('json-timestamp'),
-    pvPower: document.getElementById('pv-power'),
-    batteryPower: document.getElementById('battery-power'),
-    gridPower: document.getElementById('grid-power'),
-    loadPower: document.getElementById('load-power'),
-    batteryLevel: document.getElementById('battery-level'),
-    batteryPercentage: document.getElementById('battery-percentage'),
-    batteryMode: document.getElementById('battery-mode'),
-    eDay: document.getElementById('e-day'),
-    eYear: document.getElementById('e-year'),
-    eTotal: document.getElementById('e-total'),
-    autonomy: document.getElementById('autonomy'),
-    operationMode: document.getElementById('operation-mode'),
-    backupMode: document.getElementById('backup-mode'),
-    batteryStandby: document.getElementById('battery-standby'),
-    selfConsumption: document.getElementById('self-consumption'),
-    lastUpdate: document.getElementById('last-update'),
-    // Flow-Animationen
-    pvFlowAnimation: document.getElementById('pv-flow-animation'),
-    gridFlowAnimation: document.getElementById('grid-flow-animation'),
-    batteryFlowAnimation: document.getElementById('battery-flow-animation'),
-    loadFlowAnimation: document.getElementById('load-flow-animation')
-};
+// DOM Content Loaded Event - Startpunkt
+document.addEventListener('DOMContentLoaded', function() {
+    // Uhr sofort starten
+    updateClock();
 
-// Initialisiere das Dashboard
-function initDashboard() {
-    updateDateTime();
-    loadData();
+    // Daten laden
+    fetchData();
+
+    // Chart initialisieren
     initPowerChart();
+});
 
-    // Regelmäßige Updates
-    setInterval(updateDateTime, 1000); // Jede Sekunde
-    setInterval(loadData, 30 * 60 * 1000); // Alle 30 Minuten (statt 10 Sekunden)
-}
-
-// Aktualisiere moderne Uhrzeit und Datum
-function updateDateTime() {
+// Regelmäßig Uhr aktualisieren (jede Sekunde)
+function updateClock() {
     const now = new Date();
 
     // Formatiere Datum: DD.MM.YYYY
-    const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    elements.currentDate.textContent = now.toLocaleDateString('de-DE', dateOptions);
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${day}.${month}.${year}`;
 
-    // Formatiere Uhrzeit: HH:MM:SS Uhr (modernes Format)
+    // Formatiere Uhrzeit: HH:MM:SS Uhr
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-    elements.currentTime.textContent = `${hours}:${minutes}:${seconds} Uhr`;
+    const timeStr = `${hours}:${minutes}:${seconds} Uhr`;
+
+    // Werte in HTML setzen
+    document.getElementById('current-date').textContent = dateStr;
+    document.getElementById('current-time').textContent = timeStr;
+
+    // Nächsten Tick in 1 Sekunde planen
+    setTimeout(updateClock, 1000);
 }
 
-// Lade Daten von der API
-async function loadData() {
-    try {
-        // In einer realen Anwendung würde hier ein API-Aufruf stehen.
-        // Für das Beispiel nutzen wir die statischen Daten aus data.json
-        const response = await fetch('data.json');
-        pvData = await response.json();
+// Daten von der API laden
+function fetchData() {
+    fetch('data.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Netzwerkfehler beim Laden der Daten');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Daten speichern und Dashboard aktualisieren
+            lastData = data;
+            updateDashboard(data);
 
-        updateDashboard();
-    } catch (error) {
-        console.error('Fehler beim Laden der Daten:', error);
+            // Nächsten Datenabruf in 30 Sekunden planen
+            setTimeout(fetchData, 30000);
+        })
+        .catch(error => {
+            // Bei einem Fehler trotzdem weitermachen
+            setTimeout(fetchData, 30000);
+        });
+}
+
+// Dashboard mit den neuen Daten aktualisieren
+function updateDashboard(data) {
+    if (!data || !data.Body || !data.Body.Data) return;
+
+    const siteData = data.Body.Data.Site;
+    const inverterData = data.Body.Data.Inverters["1"];
+    const timestamp = data.Head.Timestamp;
+
+    // JSON Timestamp anzeigen
+    if (timestamp) {
+        const jsonDate = new Date(timestamp);
+        const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        document.getElementById('json-timestamp').textContent = jsonDate.toLocaleString('de-DE', options);
     }
-}
 
-// Aktualisiere das Dashboard mit den neuen Daten
-function updateDashboard() {
-    if (!pvData) return;
-
-    const siteData = pvData.Body.Data.Site;
-    const inverterData = pvData.Body.Data.Inverters["1"];
-    const timestamp = pvData.Head.Timestamp;
-
-    // JSON Timestamp im Header anzeigen
-    const jsonDate = new Date(timestamp);
-    const jsonTimeOptions = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    };
-    elements.jsonTimestamp.textContent = `${jsonDate.toLocaleString('de-DE', jsonTimeOptions)}`;
-
-    // Leistungswerte aktualisieren (absolute Werte anzeigen)
-    elements.pvPower.textContent = Math.abs(siteData.P_PV).toFixed(0);
-    elements.batteryPower.textContent = Math.abs(siteData.P_Akku).toFixed(0);
-    elements.gridPower.textContent = Math.abs(siteData.P_Grid).toFixed(0);
-    elements.loadPower.textContent = Math.abs(siteData.P_Load).toFixed(0);
+    // Power-Werte aktualisieren
+    document.getElementById('pv-power').textContent = Math.abs(siteData.P_PV).toFixed(0);
+    document.getElementById('battery-power').textContent = Math.abs(siteData.P_Akku).toFixed(0);
+    document.getElementById('grid-power').textContent = Math.abs(siteData.P_Grid).toFixed(0);
+    document.getElementById('load-power').textContent = Math.abs(siteData.P_Load).toFixed(0);
 
     // Batteriestatus
     const batteryPercentage = inverterData.SOC;
-    elements.batteryPercentage.textContent = batteryPercentage;
-    elements.batteryLevel.style.height = `${batteryPercentage}%`;
-    elements.batteryMode.textContent = translateBatteryMode(inverterData.Battery_Mode);
+    document.getElementById('battery-percentage').textContent = batteryPercentage;
 
-    // Farbliche Anpassung des Batteriestands
+    const batteryLevel = document.getElementById('battery-level');
+    batteryLevel.style.height = `${batteryPercentage}%`;
+
+    // Batterie-Farbe anpassen
     if (batteryPercentage < 20) {
-        elements.batteryLevel.style.background = 'linear-gradient(to top, #f44336, #ff5722)';
+        batteryLevel.style.background = 'linear-gradient(to top, #f44336, #ff5722)';
     } else if (batteryPercentage < 50) {
-        elements.batteryLevel.style.background = 'linear-gradient(to top, #ff5722, #ff9800)';
+        batteryLevel.style.background = 'linear-gradient(to top, #ff5722, #ff9800)';
     } else {
-        elements.batteryLevel.style.background = 'linear-gradient(to top, #4caf50, #8bc34a)';
+        batteryLevel.style.background = 'linear-gradient(to top, #4caf50, #8bc34a)';
     }
 
-    // Statistiken
-    elements.eDay.textContent = siteData.E_Day;
-    elements.eYear.textContent = (siteData.E_Year / 1000).toFixed(2);
-    elements.eTotal.textContent = (siteData.E_Total / 1000000).toFixed(2);
-    elements.autonomy.textContent = siteData.rel_Autonomy.toFixed(1);
+    // Batterie-Modus
+    document.getElementById('battery-mode').textContent = translateBatteryMode(inverterData.Battery_Mode);
+
+    // Statistik-Werte
+    document.getElementById('e-day').textContent = siteData.E_Day;
+    document.getElementById('e-year').textContent = (siteData.E_Year / 1000).toFixed(2);
+    document.getElementById('e-total').textContent = (siteData.E_Total / 1000000).toFixed(2);
+    document.getElementById('autonomy').textContent = siteData.rel_Autonomy.toFixed(1);
 
     // Anlagenstatus
-    elements.operationMode.textContent = translateOperationMode(siteData.Mode);
-    elements.backupMode.textContent = siteData.BackupMode ? 'Ein' : 'Aus';
-    elements.batteryStandby.textContent = siteData.BatteryStandby ? 'Ein' : 'Aus';
-    elements.selfConsumption.textContent = `${siteData.rel_SelfConsumption.toFixed(1)}%`;
+    document.getElementById('operation-mode').textContent = translateOperationMode(siteData.Mode);
+    document.getElementById('backup-mode').textContent = siteData.BackupMode ? 'Ein' : 'Aus';
+    document.getElementById('battery-standby').textContent = siteData.BatteryStandby ? 'Ein' : 'Aus';
+    document.getElementById('self-consumption').textContent = `${siteData.rel_SelfConsumption.toFixed(1)}%`;
 
-    // Letzte Aktualisierung
+    // Letztes Update
     const lastUpdateDate = new Date(timestamp);
-    elements.lastUpdate.textContent = lastUpdateDate.toLocaleString('de-DE');
+    document.getElementById('last-update').textContent = lastUpdateDate.toLocaleString('de-DE');
 
-    // Energiefluss-Animation aktualisieren
+    // Energiefluss aktualisieren
     updateFlowAnimations(siteData);
 
     // Chart aktualisieren
-    updatePowerChart(siteData);
+    if (powerChart) {
+        updatePowerChart(siteData);
+    }
 }
 
-// Initialisiere das Leistungsverteilungs-Diagramm
+// Power Chart initialisieren
 function initPowerChart() {
     const ctx = document.getElementById('power-chart').getContext('2d');
 
@@ -189,10 +188,8 @@ function initPowerChart() {
     });
 }
 
-// Aktualisiere das Leistungsverteilungs-Diagramm
+// Power Chart aktualisieren
 function updatePowerChart(siteData) {
-    if (!powerChart) return;
-
     powerChart.data.datasets[0].data = [
         Math.abs(siteData.P_PV),
         Math.abs(siteData.P_Akku),
@@ -201,41 +198,6 @@ function updatePowerChart(siteData) {
     ];
 
     powerChart.update();
-}
-
-// Aktualisiere die Energiefluss-Animationen
-function updateFlowAnimations(siteData) {
-    // PV-Fluss (immer positiv vom PV zum System)
-    if (siteData.P_PV > 0) {
-        elements.pvFlowAnimation.style.display = 'block';
-        elements.pvFlowAnimation.style.animationDirection = 'normal';
-    } else {
-        elements.pvFlowAnimation.style.display = 'none';
-    }
-
-    // Netz-Fluss (positiv = Einspeisung, negativ = Bezug)
-    if (siteData.P_Grid !== 0) {
-        elements.gridFlowAnimation.style.display = 'block';
-        elements.gridFlowAnimation.style.animationDirection = siteData.P_Grid > 0 ? 'normal' : 'reverse';
-    } else {
-        elements.gridFlowAnimation.style.display = 'none';
-    }
-
-    // Batterie-Fluss (positiv = Entladen, negativ = Laden)
-    if (siteData.P_Akku !== 0) {
-        elements.batteryFlowAnimation.style.display = 'block';
-        elements.batteryFlowAnimation.style.animationDirection = siteData.P_Akku > 0 ? 'normal' : 'reverse';
-    } else {
-        elements.batteryFlowAnimation.style.display = 'none';
-    }
-
-    // Verbrauchs-Fluss (immer negativ, vom System zum Verbrauch)
-    if (siteData.P_Load < 0) {
-        elements.loadFlowAnimation.style.display = 'block';
-        elements.loadFlowAnimation.style.animationDirection = 'normal';
-    } else {
-        elements.loadFlowAnimation.style.display = 'none';
-    }
 }
 
 // Übersetze Betriebsmodus
@@ -263,5 +225,41 @@ function translateBatteryMode(mode) {
     return modes[mode] || mode;
 }
 
-// Starte das Dashboard
-document.addEventListener('DOMContentLoaded', initDashboard);
+// Aktualisiere die Energiefluss-Animationen
+function updateFlowAnimations(siteData) {
+    // PV-Fluss
+    const pvFlow = document.getElementById('pv-flow-animation');
+    if (siteData.P_PV > 0) {
+        pvFlow.style.display = 'block';
+        pvFlow.style.animationDirection = 'normal';
+    } else {
+        pvFlow.style.display = 'none';
+    }
+
+    // Netz-Fluss
+    const gridFlow = document.getElementById('grid-flow-animation');
+    if (siteData.P_Grid !== 0) {
+        gridFlow.style.display = 'block';
+        gridFlow.style.animationDirection = siteData.P_Grid > 0 ? 'normal' : 'reverse';
+    } else {
+        gridFlow.style.display = 'none';
+    }
+
+    // Batterie-Fluss
+    const batteryFlow = document.getElementById('battery-flow-animation');
+    if (siteData.P_Akku !== 0) {
+        batteryFlow.style.display = 'block';
+        batteryFlow.style.animationDirection = siteData.P_Akku > 0 ? 'normal' : 'reverse';
+    } else {
+        batteryFlow.style.display = 'none';
+    }
+
+    // Verbrauchs-Fluss
+    const loadFlow = document.getElementById('load-flow-animation');
+    if (siteData.P_Load < 0) {
+        loadFlow.style.display = 'block';
+        loadFlow.style.animationDirection = 'normal';
+    } else {
+        loadFlow.style.display = 'none';
+    }
+}

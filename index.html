@@ -4,21 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PV-Anlage Dashboard</title>
+    <!-- Externes CSS laden -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Chart.js laden -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
 <div class="dashboard">
     <header>
         <div class="header-left">
+            <h1><i class="fas fa-solar-panel"></i> PV-Anlage Dashboard</h1>
             <div class="modern-time">
-                <span id="current-time" class="modern-clock"></span>
+                <span id="current-time" class="modern-clock">00:00:00 Uhr</span>
             </div>
         </div>
         <div class="header-right">
             <div class="date-time">
-                <span id="current-date"></span>
-                <span id="json-timestamp" class="json-time"></span>
+                <span id="current-date">01.01.2025</span>
+                <span id="json-timestamp" class="json-time">--.--.---- --:--:--</span>
             </div>
         </div>
     </header>
@@ -66,7 +70,7 @@
             <h2>Batteriestatus</h2>
             <div class="battery-container">
                 <div class="battery-graphic">
-                    <div class="battery-level" id="battery-level"></div>
+                    <div class="battery-level" id="battery-level" style="height: 0%"></div>
                 </div>
                 <div class="battery-info">
                     <div class="battery-percentage">
@@ -138,7 +142,7 @@
     <p>Daten aktualisiert: <span id="last-update">-</span></p>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+<!-- Unser neues Skript laden -->
 <script src="script.js"></script>
 </body>
 </html>
